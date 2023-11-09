@@ -18,8 +18,9 @@ const Display = styled.div`
   width: 100%;
   flex: 1;
   overflow-y: scroll;
-  background-image: url("/bg.jpeg");
-  background-size: cover;
+  /* background-image: url("/bg.jpeg");
+  background-size: cover; */
+  background-color: black;
 `;
 
 const ControlArea = styled.div`
