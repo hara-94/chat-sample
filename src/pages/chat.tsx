@@ -112,7 +112,7 @@ const PageNatural = () => {
         (ref.current?.scrollHeight ?? 0) - scrollHeightRef.current;
       ref.current?.scrollTo({
         top: positionY,
-        behavior: "instant",
+        behavior: "auto",
       });
       scrollHeightRef.current = ref.current?.scrollHeight ?? 0;
       isAdjustPositionRef.current = false;
@@ -132,7 +132,7 @@ const PageNatural = () => {
   useLayoutEffect(() => {
     ref.current?.scrollTo({
       top: ref.current?.scrollHeight,
-      behavior: "instant",
+      behavior: "auto",
     });
   }, []);
 
