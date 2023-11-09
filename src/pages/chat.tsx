@@ -4,6 +4,7 @@ import {
   useEffect,
   useCallback,
   useLayoutEffect,
+  memo,
 } from "react";
 import styled from "styled-components";
 import { Frame } from "~/components/Frame";
@@ -61,6 +62,9 @@ const InputButton = styled.button`
   border: none;
 `;
 
+const MemorizedChatList = memo(NaturalChatContainer);
+const MemorizedFrame = memo(Frame);
+
 const START_COUNT = 100;
 
 const PageNatural = () => {
@@ -78,7 +82,6 @@ const PageNatural = () => {
 
     const div = ref.current;
 
-    // const isNearTop = (div?.scrollTop ?? -1) < 100;
     const isNearTop = (div?.scrollTop ?? -1) === 0;
 
     if (isNearTop) {
@@ -100,33 +103,39 @@ const PageNatural = () => {
     };
   }, [handleScroll]);
 
+  // useEffect(() => {
+  //   if (!ref.current) {
+  //     return;
+  //   }
+  //   scrollHeightRef.current = ref.current.scrollHeight;
+
+  //   const observer = new MutationObserver(() => {
+  //     if (!ref.current) return;
+  //     isAdjustPositionRef.current = true;
+  //     const positionY =
+  //       (ref.current?.scrollHeight ?? 0) - scrollHeightRef.current;
+
+  //     scrollHeightRef.current = ref.current?.scrollHeight ?? 0;
+  //     ref.current.scrollTop = positionY;
+
+  //     isAdjustPositionRef.current = false;
+  //   });
+
+  //   observer.observe(ref.current, {
+  //     attributes: true,
+  //     childList: true,
+  //     subtree: true,
+  //   });
+
+  //   return () => {
+  //     observer.disconnect();
+  //   };
+  // }, []);
+
   useEffect(() => {
-    if (!ref.current) {
-      return;
+    if (ref.current) {
+      scrollHeightRef.current = ref.current.scrollHeight;
     }
-    scrollHeightRef.current = ref.current.scrollHeight;
-
-    const observer = new MutationObserver(() => {
-      isAdjustPositionRef.current = true;
-      const positionY =
-        (ref.current?.scrollHeight ?? 0) - scrollHeightRef.current;
-      ref.current?.scrollTo({
-        top: positionY,
-        behavior: "auto",
-      });
-      scrollHeightRef.current = ref.current?.scrollHeight ?? 0;
-      isAdjustPositionRef.current = false;
-    });
-
-    observer.observe(ref.current, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-    });
-
-    return () => {
-      observer.disconnect();
-    };
   }, []);
 
   useLayoutEffect(() => {
@@ -136,8 +145,18 @@ const PageNatural = () => {
     });
   }, []);
 
+  useLayoutEffect(() => {
+    if (!ref.current) {
+      return;
+    }
+
+    const positionY = ref.current.scrollHeight - scrollHeightRef.current;
+    scrollHeightRef.current = ref.current.scrollHeight;
+    ref.current.scrollTop = positionY;
+  }, [ref.current?.scrollHeight]);
+
   return (
-    <Frame
+    <MemorizedFrame
       ref={ref}
       controlArea={
         <ControlAreaContainer>
@@ -194,13 +213,8 @@ const PageNatural = () => {
                   }
                   ref.current?.scrollTo({
                     top: ref.current?.scrollHeight,
-                    behavior: "instant",
+                    behavior: "auto",
                   });
-                  // setIndex(0);
-                  // setChats(generateChats(0, count));
-                  setCallHandleScroll(false);
-                  setChats([]);
-                  setCallHandleScroll(true);
                 }}
               >
                 初期化
@@ -215,7 +229,7 @@ const PageNatural = () => {
           return <NaturalChatItem {...chat} key={chat.key} />;
         })}
       </NaturalChatContainer>
-    </Frame>
+    </MemorizedFrame>
   );
 };
 
