@@ -1,59 +1,41 @@
-import { PropsWithChildren } from "react";
+import { forwardRef } from "react";
 import styled from "styled-components";
 
 export type FrameProps = {
-  onClickHome?: () => void;
+  children?: React.ReactNode;
+  controlArea?: React.ReactNode;
 };
 
 const Container = styled.div`
-  box-sizing: border-box;
+  width: 100%;
+  max-width: 500px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  width: 375px;
-  height: 720px;
-  margin: 0 auto;
-  border: 2px solid lightgray;
-  border-radius: 16px;
-  padding: 16px;
-  background-color: #6d6f73;
 `;
 
 const Display = styled.div`
-  overflow: hidden;
-  position: relative;
-  height: 90%;
-  align-self: stretch;
-  background-color: white;
-  border-radius: 8px;
+  width: 100%;
+  flex: 1;
+  overflow-y: scroll;
+  background-image: url("/bg.jpeg");
+  background-size: cover;
 `;
 
-const HomeButton = styled.button`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  appearance: none;
-  border: none;
+const ControlArea = styled.div`
+  width: 100%;
+  height: 100px;
 `;
 
-const Countdown = styled.div`
-  position: absolute;
-  right: 10px;
-  bottom: 150px;
-  padding: 8px 16px;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-`;
+export const Frame = forwardRef<HTMLDivElement, FrameProps>((props, ref) => {
+  const { children, controlArea } = props;
 
-export const Frame = (props: PropsWithChildren<FrameProps>) => {
   return (
     <Container>
-      <Display>
-        {props.children}
-        <Countdown>{}</Countdown>
-      </Display>
-      <HomeButton onClick={props.onClickHome} />
+      <Display ref={ref}>{children}</Display>
+      <ControlArea>{controlArea}</ControlArea>
     </Container>
   );
-};
+});
+
+Frame.displayName = "Frame";

@@ -14,6 +14,11 @@ const HeaderLogo = styled.img`
   height: auto;
 `;
 
+const Main = styled.div`
+  width: 100%;
+  height: calc(100dvh - 100px);
+`;
+
 const Footer = styled.div`
   width: 100%;
   height: 50px;
@@ -26,7 +31,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <Header>
         <HeaderLogo src="https://placehold.jp/700x200.png" alt="logo" />
       </Header>
-      {children}
+      <Main>{children}</Main>
       <Footer></Footer>
     </>
   );
