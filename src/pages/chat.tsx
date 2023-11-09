@@ -66,7 +66,7 @@ const START_COUNT = 1;
 const LOAD_COUNT = 10;
 
 const PageNatural = () => {
-  const [latestCount, setLatestCount] = useState(0)
+  const [latestCount, setLatestCount] = useState(0);
   const [index, setIndex] = useState(0);
   const [chats, setChats] = useState(generateChats(index, START_COUNT));
   const [userInitialChatsCount, setUserInitialChatsCount] =
@@ -103,26 +103,23 @@ const PageNatural = () => {
     };
   }, [handleTouchEnd]);
 
-  const handleScroll = useCallback(
-    () => {
-      console.log("scroll")
-      if (isTouching.current) return;
+  const handleScroll = useCallback(() => {
+    console.log(`scroll: ${ref.current?.scrollTop}`);
+    if (isTouching.current) return;
 
-      const div = ref.current;
+    const div = ref.current;
 
-      const isNearTop = (div?.scrollTop ?? -1) === 0;
+    const isNearTop = (div?.scrollTop ?? -1) === 0;
 
-      if (isNearTop) {
-        const newIndex = index + LOAD_COUNT;
-        setChats((prev) => [
-          ...prev,
-          ...generateChats(newIndex + (START_COUNT - LOAD_COUNT), LOAD_COUNT),
-        ]);
-        setIndex(newIndex);
-      }
-    },
-    [index]
-  );
+    if (isNearTop) {
+      const newIndex = index + LOAD_COUNT;
+      setChats((prev) => [
+        ...prev,
+        ...generateChats(newIndex + (START_COUNT - LOAD_COUNT), LOAD_COUNT),
+      ]);
+      setIndex(newIndex);
+    }
+  }, [index]);
 
   useEffect(() => {
     const div = ref.current;
@@ -254,7 +251,7 @@ const PageNatural = () => {
                     ...prev,
                   ]);
                   setTriggerScrollBottom((prev) => !prev);
-                  setLatestCount((prev) => prev + 1)
+                  setLatestCount((prev) => prev + 1);
                 }}
               >
                 add latest
