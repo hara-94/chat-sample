@@ -7,10 +7,12 @@ const Display = styled.div``;
 
 const List = styled.div`
   width: 100%;
+  min-height: 100%;
   padding: 10px;
   display: flex;
   flex-direction: column-reverse;
   /* flex-direction: column; */
+  justify-content: flex-start;
   gap: 16px;
 `;
 

@@ -4,7 +4,6 @@ import {
   useEffect,
   useCallback,
   useLayoutEffect,
-  memo,
 } from "react";
 import styled from "styled-components";
 import { Frame } from "~/components/Frame";
@@ -23,7 +22,7 @@ const generateRandomString = (charCount = 7): string => {
 };
 
 const generateChats = (
-  initialIndex: number = 0,
+  initialIndex: number,
   count: number
 ): NaturalChatItemProps[] => {
   return [...Array(count)]
@@ -33,10 +32,11 @@ const generateChats = (
         key: generateRandomString(),
         index: initialIndex + index,
         profileUrl: "https://placehold.jp/150x150.png",
-        // message: [...Array(index + 1)].map((_, i) => i).join(", "),
         message: (initialIndex + index).toString(),
         imgUrl:
-          index % 50 === 0 ? "https://placehold.jp/550x350.png" : undefined,
+          initialIndex + (index % 50) === 0
+            ? "https://placehold.jp/550x350.png"
+            : undefined,
       };
     });
 };
@@ -62,37 +62,67 @@ const InputButton = styled.button`
   border: none;
 `;
 
-const MemorizedChatList = memo(NaturalChatContainer);
-const MemorizedFrame = memo(Frame);
-
-const START_COUNT = 100;
+const START_COUNT = 1;
+const LOAD_COUNT = 10;
 
 const PageNatural = () => {
+  const [latestCount, setLatestCount] = useState(0)
   const [index, setIndex] = useState(0);
   const [chats, setChats] = useState(generateChats(index, START_COUNT));
   const [userInitialChatsCount, setUserInitialChatsCount] =
     useState(START_COUNT);
+  const [triggerScrollBottom, setTriggerScrollBottom] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
   const scrollHeightRef = useRef<number>(ref.current?.scrollHeight ?? 0);
-  const isAdjustPositionRef = useRef<boolean>(false);
+  const isTouching = useRef<boolean>(false);
 
-  const handleScroll = useCallback(() => {
-    if (isAdjustPositionRef.current) return;
+  const handleTouchStart = useCallback(() => {
+    isTouching.current = true;
+  }, []);
 
+  const handleTouchEnd = useCallback(() => {
+    isTouching.current = false;
+  }, []);
+
+  useEffect(() => {
     const div = ref.current;
+    div?.addEventListener("touchstart", handleTouchStart);
 
-    const isNearTop = (div?.scrollTop ?? -1) === 0;
+    return () => {
+      div?.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, [handleTouchStart]);
 
-    if (isNearTop) {
-      const newIndex = index + 100;
-      setChats((prev) => [
-        ...prev,
-        ...generateChats(newIndex + (START_COUNT - 100), 100),
-      ]);
-      setIndex(newIndex);
-    }
-  }, [index]);
+  useEffect(() => {
+    const div = ref.current;
+    div?.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      div?.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [handleTouchEnd]);
+
+  const handleScroll = useCallback(
+    () => {
+      console.log("scroll")
+      if (isTouching.current) return;
+
+      const div = ref.current;
+
+      const isNearTop = (div?.scrollTop ?? -1) === 0;
+
+      if (isNearTop) {
+        const newIndex = index + LOAD_COUNT;
+        setChats((prev) => [
+          ...prev,
+          ...generateChats(newIndex + (START_COUNT - LOAD_COUNT), LOAD_COUNT),
+        ]);
+        setIndex(newIndex);
+      }
+    },
+    [index]
+  );
 
   useEffect(() => {
     const div = ref.current;
@@ -102,6 +132,37 @@ const PageNatural = () => {
       div?.removeEventListener("scroll", handleScroll);
     };
   }, [handleScroll]);
+
+  useEffect(() => {
+    if (ref.current) {
+      scrollHeightRef.current = ref.current.scrollHeight;
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    console.log(`scrollBottom: ${ref.current?.scrollHeight}`);
+    ref.current?.scrollTo({
+      top: ref.current?.scrollHeight,
+      behavior: "auto",
+    });
+  }, []);
+
+  useEffect(() => {
+    ref.current?.scrollTo({
+      top: ref.current?.scrollHeight,
+      behavior: "auto",
+    });
+  }, [triggerScrollBottom]);
+
+  useLayoutEffect(() => {
+    if (!ref.current) {
+      return;
+    }
+
+    const positionY = ref.current.scrollHeight - scrollHeightRef.current;
+    scrollHeightRef.current = ref.current.scrollHeight;
+    ref.current.scrollTop = positionY;
+  }, [ref.current?.scrollHeight]);
 
   // useEffect(() => {
   //   if (!ref.current) {
@@ -132,31 +193,8 @@ const PageNatural = () => {
   //   };
   // }, []);
 
-  useEffect(() => {
-    if (ref.current) {
-      scrollHeightRef.current = ref.current.scrollHeight;
-    }
-  }, []);
-
-  useLayoutEffect(() => {
-    ref.current?.scrollTo({
-      top: ref.current?.scrollHeight,
-      behavior: "auto",
-    });
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!ref.current) {
-      return;
-    }
-
-    const positionY = ref.current.scrollHeight - scrollHeightRef.current;
-    scrollHeightRef.current = ref.current.scrollHeight;
-    ref.current.scrollTop = positionY;
-  }, [ref.current?.scrollHeight]);
-
   return (
-    <MemorizedFrame
+    <Frame
       ref={ref}
       controlArea={
         <ControlAreaContainer>
@@ -174,6 +212,7 @@ const PageNatural = () => {
               </Button>
               <Button
                 onClick={() => {
+                  console.log(`toBottom: ${ref.current?.scrollHeight}`);
                   ref.current?.scrollTo({
                     top: ref.current?.scrollHeight,
                     behavior: "smooth",
@@ -182,7 +221,48 @@ const PageNatural = () => {
               >
                 toBottom
               </Button>
-              <p>メッセージ: {chats.length}件</p>
+              {/* <Button
+                onClick={() => {
+                  const newIndex = index + 1;
+                  setChats((prev) => [
+                    ...prev,
+                    {
+                      key: generateRandomString(),
+                      index: newIndex,
+                      profileUrl: "https://placehold.jp/150x150.png",
+                      message: newIndex.toString(),
+                      imgUrl:
+                        newIndex % 50 === 0
+                          ? "https://placehold.jp/550x350.png"
+                          : undefined,
+                    },
+                  ]);
+                  setIndex(newIndex);
+                }}
+              >
+                add single
+              </Button> */}
+              <Button
+                onClick={() => {
+                  setChats((prev) => [
+                    {
+                      key: generateRandomString(),
+                      index: latestCount,
+                      profileUrl: "https://placehold.jp/150x150.png",
+                      message: "latest",
+                    },
+                    ...prev,
+                  ]);
+                  setTriggerScrollBottom((prev) => !prev);
+                  setLatestCount((prev) => prev + 1)
+                }}
+              >
+                add latest
+              </Button>
+              <Button onClick={() => console.log(ref.current?.scrollHeight)}>
+                log
+              </Button>
+              <p style={{ fontSize: "12px" }}>メッセージ: {chats.length}件</p>
             </HStack>
             {/* <HStack style={{ alignItems: "center" }}>
               <VStack style={{ gap: "4px" }}>
@@ -229,7 +309,7 @@ const PageNatural = () => {
           return <NaturalChatItem {...chat} key={chat.key} />;
         })}
       </NaturalChatContainer>
-    </MemorizedFrame>
+    </Frame>
   );
 };
 
