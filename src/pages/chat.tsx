@@ -34,7 +34,7 @@ const generateChats = (
         profileUrl: "https://placehold.jp/150x150.png",
         message: (initialIndex + index).toString(),
         imgUrl:
-          initialIndex + (index % 50) === 0
+          (initialIndex + index) % 50 === 0
             ? "https://placehold.jp/550x350.png"
             : undefined,
       };
