@@ -67,15 +67,22 @@ const LOAD_COUNT = 10;
 
 const PageNatural = () => {
   const [latestCount, setLatestCount] = useState(0);
+  // ミスって番号とindexズレてるとかあったのでindex確認するためだけ
   const [index, setIndex] = useState(0);
   const [chats, setChats] = useState(generateChats(index, START_COUNT));
   const [userInitialChatsCount, setUserInitialChatsCount] =
     useState(START_COUNT);
+
+  // 最新(latest)のメッセージ入れた時にスクロールするためのフラグ
   const [triggerScrollBottom, setTriggerScrollBottom] = useState(false);
 
+  // ref地獄
   const ref = useRef<HTMLDivElement>(null);
+  // 直前のスクロール領域の高さ
   const scrollHeightRef = useRef<number>(ref.current?.scrollHeight ?? 0);
+  // ユーザーがスクロール中かどうか
   const isTouching = useRef<boolean>(false);
+  // 直前のスクロール位置
   const scrollY = useRef<number>(0);
 
   const handleTouchStart = useCallback(() => {
@@ -106,12 +113,17 @@ const PageNatural = () => {
 
   const handleScroll = useCallback(() => {
     console.log(`scroll: ${ref.current?.scrollTop}`);
+    // 直前のスクロール位置が0の時は何もしない
+    // 2重スクロール対策
     if (scrollY.current === 0) {
       scrollY.current = ref.current?.scrollTop ?? 0;
       return;
     }
     scrollY.current = ref.current?.scrollTop ?? 0;
 
+    // ユーザーがスクロール中の時は何もしない
+    // ユーザーがスクロール中だとスクロール位置の維持ができないっぽく
+    // 多重ロードが走る
     if (isTouching.current) return;
 
     const div = ref.current;
@@ -143,14 +155,15 @@ const PageNatural = () => {
     }
   }, []);
 
+  // 初期画面時に一番下にスクロールする
   useLayoutEffect(() => {
-    console.log(`scrollBottom: ${ref.current?.scrollHeight}`);
     ref.current?.scrollTo({
       top: ref.current?.scrollHeight,
       behavior: "auto",
     });
   }, []);
 
+  // 最新のメッセージが追加された時に一番下にスクロールする
   useEffect(() => {
     ref.current?.scrollTo({
       top: ref.current?.scrollHeight,
@@ -158,6 +171,7 @@ const PageNatural = () => {
     });
   }, [triggerScrollBottom]);
 
+  // 過去分を読み込んだ時にスクロール位置を維持する
   useLayoutEffect(() => {
     if (!ref.current) {
       return;
