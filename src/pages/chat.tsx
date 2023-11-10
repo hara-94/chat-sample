@@ -76,6 +76,7 @@ const PageNatural = () => {
   const ref = useRef<HTMLDivElement>(null);
   const scrollHeightRef = useRef<number>(ref.current?.scrollHeight ?? 0);
   const isTouching = useRef<boolean>(false);
+  const scrollY = useRef<number>(0);
 
   const handleTouchStart = useCallback(() => {
     isTouching.current = true;
@@ -105,6 +106,12 @@ const PageNatural = () => {
 
   const handleScroll = useCallback(() => {
     console.log(`scroll: ${ref.current?.scrollTop}`);
+    if (scrollY.current === 0) {
+      scrollY.current = ref.current?.scrollTop ?? 0;
+      return;
+    }
+    scrollY.current = ref.current?.scrollTop ?? 0;
+
     if (isTouching.current) return;
 
     const div = ref.current;
