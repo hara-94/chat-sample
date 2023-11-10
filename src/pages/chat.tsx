@@ -65,6 +65,14 @@ const InputButton = styled.button`
 const START_COUNT = 1;
 const LOAD_COUNT = 10;
 
+/**
+ * ①スクロール位置が0になる
+ * ②追加のchatを読み込んでレンダリングがトリガーされる
+ * ③useLayoutEffectで描画前にスクロール位置を元に戻す
+ * が基本の流れです
+ * spで①の時にユーザーが指を離さないと②がうまくいかないぽいので
+ * touchイベントを拾って判定しています
+ */
 const PageNatural = () => {
   const [latestCount, setLatestCount] = useState(0);
   // ミスって番号とindexズレてるとかあったのでindex確認するためだけ
