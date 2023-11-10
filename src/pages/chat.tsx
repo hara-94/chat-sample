@@ -263,9 +263,9 @@ const PageNatural = () => {
               >
                 add latest
               </Button>
-              <Button onClick={() => console.log(ref.current?.scrollHeight)}>
+              {/* <Button onClick={() => console.log(ref.current?.scrollHeight)}>
                 log
-              </Button>
+              </Button> */}
               <p style={{ fontSize: "12px" }}>メッセージ: {chats.length}件</p>
             </HStack>
             {/* <HStack style={{ alignItems: "center" }}>
